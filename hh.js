@@ -56,7 +56,7 @@ function get_colum(table, value,cloum=null,data=null) {
 app.use(cors({
     origin: [
         "http://localhost:4200",
-        "https://taupe-empanada-cc5739.netlify.app"
+        "mhadevmasala.netlify.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
