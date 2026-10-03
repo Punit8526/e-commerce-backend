@@ -54,9 +54,11 @@ function get_colum(table, value,cloum=null,data=null) {
   });
 }
 app.use(cors({
-  origin: "https://taupe-empanada-cc5739.netlify.app/"
+    origin: [
+        "http://localhost:4200",
+        "https://taupe-empanada-cc5739.netlify.app"
+    ]
 }));
-app.use(express.json());
 
 db.getConnection((err, connection) => {
     if (err) {
@@ -101,6 +103,11 @@ app.post("/api/:value", async (req, res) => {
       error: error.message,
     });
   }
+});
+app.get("/", (req, res) => {
+    res.json({
+        message: "Backend running"
+    });
 });
 
 
