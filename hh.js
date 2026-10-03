@@ -1,23 +1,25 @@
+const fs = require("fs");
 require('dotenv').config();
 const mysql = require("mysql2");
 const express = require("express");
 const cors = require("cors");
 const app = express();
- const sql2= `
-        SELECT
-            c.id,
-            c.user_id,
-            c.product_id,
-            c.weight,
-            c.quantity,
-            c.price,
-            p.name,
-            p.image
-        FROM cart c
-        JOIN product p
-            ON c.product_id = p.id
-        WHERE c.user_id = ?
-    `;
+const db = mysql.createPool({
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+
+    ssl: {
+        ca: fs.readFileSync("./ca.pem")
+    },
+
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    connectTimeout: 20000
+});
 function get_colum(table, value,cloum=null,data=null) {
   return new Promise((resolve, reject) => {
     let sql;
@@ -27,7 +29,7 @@ function get_colum(table, value,cloum=null,data=null) {
     }
     else{
       if(table=='cart'){
-        sql=`SELECT p.name,p.description,p.price_1kg,p.image,p.discount,c.quantity,c.weight FROM cart c JOIN product p ON c.product_id = p.id WHERE c.user_id =?`
+        sql=`SELECT p.name,p.description,p.price_1kg,p.image,p.discount,c.quantity,c.id,c.weight FROM cart c JOIN product p ON c.product_id = p.id WHERE c.user_id =?`
         params=[data]
       }
       else{
@@ -51,22 +53,20 @@ function get_colum(table, value,cloum=null,data=null) {
     });
   });
 }
-app.use(cors());
+app.use(cors({
+  origin: "https://taupe-empanada-cc5739.netlify.app/"
+}));
 app.use(express.json());
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306
-});
-db.connect((err) => {
-  if (err) {
-    console.log("MySQL connection failed");
-    console.log(err);
-    return;
-  }
-  console.log("MySQL connected");
+
+db.getConnection((err, connection) => {
+    if (err) {
+        console.log("MySQL connection failed");
+        console.log(err);
+        return;
+    }
+
+    console.log("Aiven MySQL connected successfully!");
+    connection.release();
 });
 app.post("/api/:value", async (req, res) => {
   let values = [];
@@ -133,4 +133,6 @@ app.post('/api/:t_name/:value', async (req, res) => {
 });
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+});
