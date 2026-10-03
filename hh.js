@@ -57,8 +57,12 @@ app.use(cors({
     origin: [
         "http://localhost:4200",
         "https://taupe-empanada-cc5739.netlify.app"
-    ]
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+app.use(express.json());
 
 db.getConnection((err, connection) => {
     if (err) {
